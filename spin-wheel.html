@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin Wheel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto 30px;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid #333;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+            overflow: visible;
+        }
+
+        .segment:nth-child(1) {
+            background: #FF6B6B;
+            transform: rotate(0deg);
+        }
+
+        .segment:nth-child(2) {
+            background: #4ECDC4;
+            transform: rotate(45deg);
+        }
+
+        .segment:nth-child(3) {
+            background: #45B7D1;
+            transform: rotate(90deg);
+        }
+
+        .segment:nth-child(4) {
+            background: #FFA07A;
+            transform: rotate(135deg);
+        }
+
+        .segment:nth-child(5) {
+            background: #98D8C8;
+            transform: rotate(180deg);
+        }
+
+        .segment:nth-child(6) {
+            background: #F7DC6F;
+            transform: rotate(225deg);
+        }
+
+        .segment:nth-child(7) {
+            background: #BB8FCE;
+            transform: rotate(270deg);
+        }
+
+        .segment:nth-child(8) {
+            background: #85C1E2;
+            transform: rotate(315deg);
+        }
+
+        .segment-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: center center;
+            font-weight: bold;
+            font-size: 16px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), -1px -1px 2px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            white-space: nowrap;
+            pointer-events: none;
+            text-align: center;
+            width: 100px;
+            margin-left: -50px;
+            margin-top: -0.5em;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #333;
+            z-index: 100;
+        }
+
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            border: 4px solid #333;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .spin-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .spin-button:active {
+            transform: translateY(0);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            min-height: 30px;
+        }
+
+        @media (max-width: 500px) {
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .segment-text {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎡 Spin the Wheel</h1>
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment-text" style="transform: rotate(22.5deg) translateY(-140px);">Option 1</div>
+                <div class="segment-text" style="transform: rotate(67.5deg) translateY(-140px);">Option 2</div>
+                <div class="segment-text" style="transform: rotate(112.5deg) translateY(-140px);">Option 3</div>
+                <div class="segment-text" style="transform: rotate(157.5deg) translateY(-140px);">Option 4</div>
+                <div class="segment-text" style="transform: rotate(202.5deg) translateY(-140px);">Option 5</div>
+                <div class="segment-text" style="transform: rotate(247.5deg) translateY(-140px);">Option 6</div>
+                <div class="segment-text" style="transform: rotate(292.5deg) translateY(-140px);">Option 7</div>
+                <div class="segment-text" style="transform: rotate(337.5deg) translateY(-140px);">Option 8</div>
+            </div>
+            <div class="center-circle">🎯</div>
+        </div>
+        <button class="spin-button" id="spinButton" onclick="spinWheel()">SPIN</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const wheel = document.getElementById('wheel');
+        const spinButton = document.getElementById('spinButton');
+        const result = document.getElementById('result');
+        let isSpinning = false;
+
+        const segments = [
+            'Option 1',
+            'Option 2',
+            'Option 3',
+            'Option 4',
+            'Option 5',
+            'Option 6',
+            'Option 7',
+            'Option 8'
+        ];
+
+        function spinWheel() {
+            if (isSpinning) return;
+
+            isSpinning = true;
+            spinButton.disabled = true;
+            result.textContent = '';
+
+            // Random rotation (multiple full spins + random angle)
+            const spins = 5 + Math.random() * 5; // 5-10 full spins
+            const randomAngle = Math.random() * 360;
+            const totalRotation = spins * 360 + randomAngle;
+
+            // Reset transform
+            wheel.style.transform = 'rotate(0deg)';
+            
+            // Force reflow
+            void wheel.offsetWidth;
+
+            // Apply rotation
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+
+            // Calculate which segment won
+            const normalizedAngle = (360 - (randomAngle % 360)) % 360;
+            const segmentIndex = Math.floor(normalizedAngle / 45);
+            const winningSegment = segments[segmentIndex];
+        }
+    </script>
+</body>
+</html>
