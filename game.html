@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Truths and a Lie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 48px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e5e5;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .statement {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 24px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .statement:hover {
+            border-color: #1a1a1a;
+            background: #f5f5f5;
+        }
+
+        .statement.selected {
+            border-color: #1a1a1a;
+            background: #f0f0f0;
+            border-width: 2px;
+        }
+
+        .statement.correct {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .statement.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .statement-label {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85em;
+        }
+
+        .statement-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .submit-btn {
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            padding: 14px 36px;
+            font-size: 1em;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin: 32px auto 0;
+            width: 200px;
+        }
+
+        .submit-btn:hover {
+            background: #333;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 32px;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .result.correct {
+            background: #f0f9f4;
+            color: #155724;
+            border: 1px solid #28a745;
+        }
+
+        .result.incorrect {
+            background: #fef2f2;
+            color: #721c24;
+            border: 1px solid #dc3545;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 24px;
+            color: #666;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95em;
+        }
+
+        .back-btn:hover {
+            color: #1a1a1a;
+        }
+
+        .reveal-text {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← Back to Wheel</a>
+        <h1>Two Truths and a Lie</h1>
+        <p class="subtitle">Click on the statement you think is the lie</p>
+        
+        <div id="statements-container"></div>
+        
+        <button class="submit-btn" id="submitBtn" onclick="checkAnswer()" disabled>Submit Answer</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Game data - each game has 3 statements (A, B, C) and the lie is marked
+        const games = {
+            1: {
+                statements: [
+                    { text: "I took Computer Science, despite it being my worst high school grade, because I love a challenge.", isLie: false },
+                    { text: "My supervisors agree my top strength is being consistently good at making detailed meeting notes.", isLie: true},
+                    { text: "I currently support over 100 students as a Teaching Assistant, leading tutorials for 3 consecutive semesters.", isLie: false}
+                ]
+            },
+            2: {
+                statements: [
+                    { text: "I built the app's backend and deployed it to the cloud (AWS), making it 30% faster and more reliable.", isLie: false },
+                    { text: "I only used Python to build the entire app for the startup I am in from start to finish.", isLie: true },
+                    { text: "In the startup I'm in, I used AI to write code, which cut the time needed to implement a feature by 30%.", isLie: false }
+                ]
+            },
+            3: {
+                statements: [
+                    { text: "My TA role mainly involved helping students with simple programming syntax errors.", isLie: true },
+                    { text: "As a TA, I've supported students in advanced problem-solving techniques like recursion and Object-Oriented Programming.", isLie: false },
+                    { text: "I developed e-learning materials for the Career Centre that boosted student course completion rates.", isLie: false }
+                ]
+            },
+            4: {
+                statements: [
+                    { text: "I designed and implemented AI models to streamline content and ensure all materials are WCAG-compliant (accessible).", isLie: false },
+                    { text: "I only use C and Java for all my complex projects because they are my personal favorites.", isLie: true },
+                    { text: "I created backend features, like notifications and leaderboards, that led to a 25% increase in user engagement.", isLie: false }
+                ]
+            },
+            5: {
+                statements: [
+                    { text: "I integrated a caching layer like Redis with AWS to optimize system performance and minimize latency.", isLie: false },
+                    { text: "My supervisors consistently highlight my ability to 'take initiative' on challenging tasks.", isLie: false },
+                    { text: "The majority of my full-stack projects are still being built using older frameworks like jQuery and Bootstrap.", isLie: true }
+                ]
+            },
+            6: {
+                statements: [
+                    { text: "I built a system designed for massive scaling that relies on Cassandra for high-volume data handling.", isLie: false },
+                    { text: "I manage all cloud deployments exclusively on Google Cloud Platform (GCP) and do not use AWS.", isLie: true },
+                    { text: "I designed a dashboard using React and Tailwind CSS that was customized with an AI service to give real-time UX insights.", isLie: false }
+                ]
+            },
+            7: {
+                statements: [
+                    { text: "I created a VSCode extension that uses Google's AI and Computer Vision to track developer engagement.", isLie: false },
+                    { text: "For the GDSC project, I was responsible for writing all the unit tests and ensuring 100% coverage across the entire feature set.", isLie: true },
+                    { text: "I helped build the GDSC app using two different frameworks: React Native (for mobile) and Python Flask (for the backend).", isLie: false }
+                ]
+            },
+            8: {
+                statements: [
+                    { text: "I initially designed the GDSC project using a NoSQL database, but quickly adapted the architecture to a single, optimized SQL database for seamless team collaboration.", isLie: false },
+                    { text: "The campus health website I designed was just a static informational page with no JavaScript or responsiveness.", isLie: true },
+                    { text: "I once introduced Docker into the project late in the cycle because a teammate was struggling with environment setup, solving our integration blockers instantly.", isLie: false }
+                ]
+            }
+            
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = parseInt(urlParams.get('game')) || 1;
+        const currentGame = games[gameId] || games[1];
+        let selectedIndex = null;
+        let answerSubmitted = false;
+
+        // Render statements
+        function renderStatements() {
+            const container = document.getElementById('statements-container');
+            container.innerHTML = '';
+            
+            const labels = ['A', 'B', 'C'];
+            currentGame.statements.forEach((statement, index) => {
+                const statementDiv = document.createElement('div');
+                statementDiv.className = 'statement';
+                statementDiv.dataset.index = index;
+                statementDiv.innerHTML = `
+                    <div class="statement-label">Statement ${labels[index]}</div>
+                    <div class="statement-text">${statement.text}</div>
+                `;
+                statementDiv.addEventListener('click', () => selectStatement(index));
+                container.appendChild(statementDiv);
+            });
+        }
+
+        function selectStatement(index) {
+            if (answerSubmitted) return;
+            
+            selectedIndex = index;
+            document.querySelectorAll('.statement').forEach((stmt, idx) => {
+                if (idx === index) {
+                    stmt.classList.add('selected');
+                } else {
+                    stmt.classList.remove('selected');
+                }
+            });
+            
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        // Check answer
+        function checkAnswer() {
+            if (selectedIndex === null || answerSubmitted) return;
+            
+            answerSubmitted = true;
+            const resultDiv = document.getElementById('result');
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            
+            const isCorrect = currentGame.statements[selectedIndex].isLie;
+            const statements = document.querySelectorAll('.statement');
+            
+            // Mark all statements
+            currentGame.statements.forEach((statement, index) => {
+                if (statement.isLie) {
+                    statements[index].classList.add('correct');
+                }
+                if (index === selectedIndex) {
+                    if (isCorrect) {
+                        statements[index].classList.add('correct');
+                    } else {
+                        statements[index].classList.add('incorrect');
+                    }
+                }
+            });
+            
+            // Show result
+            if (isCorrect) {
+                resultDiv.className = 'result correct';
+                resultDiv.innerHTML = 'Correct! You found the lie.';
+            } else {
+                resultDiv.className = 'result incorrect';
+                const lieIndex = currentGame.statements.findIndex(s => s.isLie);
+                const labels = ['A', 'B', 'C'];
+                resultDiv.innerHTML = `Not quite. Statement ${labels[lieIndex]} was actually the lie.`;
+            }
+            
+            // Add reveal text to each statement
+            currentGame.statements.forEach((statement, index) => {
+                const revealText = document.createElement('div');
+                revealText.className = 'reveal-text';
+                revealText.textContent = statement.isLie ? 'This is the LIE' : 'This is TRUE';
+                statements[index].appendChild(revealText);
+            });
+        }
+
+        // Initialize
+        renderStatements();
+    </script>
+</body>
+</html>
+
